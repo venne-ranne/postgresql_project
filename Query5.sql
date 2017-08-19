@@ -133,7 +133,82 @@ Nickname showing for each security level all those skills that were possessed by
 participating robber in each robbery of a bank branch of the respective security level, and
 the nicknames of all robbers who have that skill. [7 marks]
 
-
+SELECT banks.security, skills.description, robbers.nickname
+FROM has_skills
+  inner join accomplices on has_skills.robber_id = accomplices.robber_id
+  inner join skills on skills.skill_id = has_skills.skill_id
+  inner join banks on accomplices.bank_name = banks.bank_name AND accomplices.city = banks.city
+  inner join robbers on accomplices.robber_id = robbers.robber_id
+GROUP BY banks.security, skills.description, robbers.nickname
+ORDER BY banks.security;
+security  |  description   |     nickname
+-----------+----------------+-------------------
+excellent | Driving        | Bugsy Siegel
+excellent | Driving        | Dutch Schulz
+excellent | Driving        | Longy Zwillman
+excellent | Driving        | Lucky Luchiano
+excellent | Driving        | Mimmy The Mau Mau
+excellent | Explosives     | Sonny Genovese
+excellent | Guarding       | Anastazia
+excellent | Guarding       | Bugsy Siegel
+excellent | Gun-Shooting   | Waxey Gordon
+excellent | Lock-Picking   | Clyde
+excellent | Lock-Picking   | Dutch Schulz
+excellent | Lock-Picking   | Greasy Guzik
+excellent | Lock-Picking   | Lucky Luchiano
+excellent | Lock-Picking   | Sonny Genovese
+excellent | Planning       | Al Capone
+excellent | Planning       | Boo Boo Hoff
+excellent | Planning       | Clyde
+excellent | Planning       | King Solomon
+excellent | Planning       | Mimmy The Mau Mau
+excellent | Preaching      | Al Capone
+excellent | Preaching      | Bonnie
+excellent | Preaching      | Greasy Guzik
+excellent | Safe-Cracking  | Al Capone
+excellent | Safe-Cracking  | Meyer Lansky
+excellent | Safe-Cracking  | Sonny Genovese
+excellent | Scouting       | Clyde
+good      | Cooking        | Vito Genovese
+good      | Eating         | Vito Genovese
+good      | Money Counting | Kid Cann
+good      | Money Counting | Mickey Cohen
+good      | Scouting       | Vito Genovese
+very good | Driving        | Lepke Buchalter
+very good | Driving        | Longy Zwillman
+very good | Explosives     | Bugsy Malone
+very good | Explosives     | Sonny Genovese
+very good | Guarding       | Anastazia
+very good | Guarding       | Lepke Buchalter
+very good | Lock-Picking   | Sonny Genovese
+very good | Planning       | Al Capone
+very good | Planning       | King Solomon
+very good | Preaching      | Al Capone
+very good | Safe-Cracking  | Al Capone
+very good | Safe-Cracking  | Moe Dalitz
+very good | Safe-Cracking  | Sonny Genovese
+weak      | Cooking        | Vito Genovese
+weak      | Driving        | Bugsy Siegel
+weak      | Driving        | Dutch Schulz
+weak      | Driving        | Lepke Buchalter
+weak      | Eating         | Vito Genovese
+weak      | Explosives     | Sonny Genovese
+weak      | Guarding       | Bugsy Siegel
+weak      | Guarding       | Lepke Buchalter
+weak      | Lock-Picking   | Clyde
+weak      | Lock-Picking   | Dutch Schulz
+weak      | Lock-Picking   | Greasy Guzik
+weak      | Lock-Picking   | Sonny Genovese
+weak      | Planning       | Al Capone
+weak      | Planning       | Boo Boo Hoff
+weak      | Planning       | Clyde
+weak      | Preaching      | Al Capone
+weak      | Preaching      | Greasy Guzik
+weak      | Safe-Cracking  | Al Capone
+weak      | Safe-Cracking  | Sonny Genovese
+weak      | Scouting       | Clyde
+weak      | Scouting       | Vito Genovese
+(65 rows)
 
 
 4. The police department wants to increase security at those bank branches that are most
@@ -191,6 +266,40 @@ than in any other city in their district. Construct a view that shows the averag
 robberies in Chicago, and the average share of all robberies for that city (other than
 Chicago) that observes the highest average share. The average share of a robbery is
 computed based on the number of participants in that particular robbery. [7 marks]
+
+
+FROM accomplices AS t1, accomplices AS t2
+
+
+
+-- Nested SQL query
+SELECT chicago.average AS "Average share in Chicago", others.average AS "Average share in other cities"
+FROM (SELECT ROUND((SUM(share)/COUNT(DISTINCT robber_id)), 2) AS "average"
+      FROM accomplices
+      WHERE accomplices.city = 'Chicago') AS chicago,
+     (SELECT ROUND((SUM(share)/COUNT(DISTINCT robber_id)), 2) AS "average"
+      FROM accomplices
+      WHERE NOT(accomplices.city = 'Chicago')) AS others;
+ Average share in Chicago | Average share in other cities
+--------------------------+-------------------------------
+                  6595.96 |                      22158.58
+(1 row)
+
+
+SELECT SUM(accomplices.share) AS "Share", COUNT(DISTINCT accomplices.robber_id) AS "Average share in Chicago"
+FROM accomplices
+GROUP BY accomplices.city;
+
+SELECT accomplices.robber_id, COUNT(accomplices.robber_id) AS "Average share in Chicago"
+FROM accomplices
+WHERE city = 'Evanston'
+GROUP BY accomplices.robber_id;
+
+SELECT sum(share)
+FROM accomplices
+WHERE city = 'Evanston'
+GROUP BY accomplices.robber_id;
+
 
 
 
