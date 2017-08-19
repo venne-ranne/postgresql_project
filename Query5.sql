@@ -40,29 +40,56 @@ penalised. Construct a view that contains the Nicknames of all robbers who parti
 more robberies than the average, but spent no time in prison. The answer should be sorted
 in decreasing order of the individual total “earnings” of the robbers. [7 marks]
 
-CREATE FUNCTION get_avg_robberies() RETURNS int AS
-$max$
-    DECLARE
-        result int;
-    BEGIN
-        SELECT COUNT(*)/COUNT(DISTINCT accomplices.robber_id)
-        FROM accomplices INTO result;
-        RETURN result;
-    END;
-$max$
-LANGUAGE plpgsql;
+-- CREATE FUNCTION get_avg_robberies() RETURNS int AS
+-- $max$
+--     DECLARE
+--         result int;
+--     BEGIN
+--         SELECT COUNT(*)/COUNT(DISTINCT accomplices.robber_id)
+--         FROM accomplices INTO result;
+--         RETURN result;
+--     END;
+-- $max$
+-- LANGUAGE plpgsql;
 
 -- Stepwise approach (with using the function get_avg_robberies)
-CREATE VIEW most_active_robbers AS
-SELECT robbers.nickname AS "Nickname"
-FROM accomplices
-    INNER JOIN robbers ON robbers.robber_id = accomplices.robber_id
-GROUP BY robbers.robber_id
-HAVING (COUNT(accomplices.robber_id) > get_avg_robberies())
-       AND (robbers.no_years = 0)
-ORDER BY SUM(accomplices.share) DESC;
+-- CREATE VIEW most_active_robbers AS
+-- SELECT robbers.nickname AS "Nickname"
+-- FROM accomplices
+--     INNER JOIN robbers ON robbers.robber_id = accomplices.robber_id
+-- GROUP BY robbers.robber_id
+-- HAVING (COUNT(accomplices.robber_id) > get_avg_robberies())
+--        AND (robbers.no_years = 0)
+-- ORDER BY SUM(accomplices.share) DESC;
 
--- Nested SQL query
+-- Stepwise approach for task 1
+CREATE VIEW total_robberies AS
+SELECT nickname, COUNT(robber_id) AS total, SUM(share) AS share
+FROM robbers
+    NATURAL INNER JOIN accomplices
+GROUP BY robber_id
+HAVING robbers.no_years = 0
+ORDER BY SUM(share) DESC;
+
+CREATE VIEW avg_robberies AS
+SELECT ROUND(AVG(total), 0) AS avg_robberies
+FROM total_robberies;
+
+CREATE VIEW most_active_robbers AS
+SELECT total_robberies.nickname AS "Nickname"
+FROM total_robberies
+    NATURAL INNER JOIN avg_robberies
+WHERE (total > avg_robberies);
+
+    Nickname
+----------------
+ Bonnie
+ Clyde
+ Sonny Genovese
+(3 rows)
+
+
+-- Nested SQL query for task 1
 SELECT (SELECT nickname
         FROM robbers
         WHERE accomplices.robber_id = robbers.robber_id) AS "Nickname"
@@ -90,23 +117,37 @@ containing the Security level, the total Number of robberies that occurred in ba
 of that security level, and the average Amount of money that was stolen during these
 robberies. [7 marks]
 
--- Stepwise approach
-SELECT banks.security AS "Security",
-       COUNT(*) AS "Total # of robberies",
-       ROUND((SUM(amount)/ COUNT(*)), 2) AS "Average amount of money"
-FROM banks
-    INNER JOIN robberies ON banks.bank_name = robberies.bank_name AND
-                            banks.city = robberies.city
-GROUP BY banks.security;
+-- Stepwise approach for task 2
+CREATE VIEW merge_banks_info AS
+SELECT bank_name, city, COUNT(*) AS total_robberies, SUM(amount) AS total_money
+FROM robberies
+GROUP BY bank_name, city;
+
+CREATE VIEW bank_securities AS
+SELECT security AS "Security",
+       SUM(total_robberies) AS "Total # of robberies",
+       ROUND((SUM(total_money)/SUM(total_robberies)), 2) AS "Average amount of money"
+FROM merge_banks_info
+    NATURAL INNER JOIN banks
+GROUP BY security;
+
  Security  | Total # of robberies | Average amount of money
 -----------+----------------------+-------------------------
  weak      |                    4 |                 2299.50
- good      |                    2 |                 3980.00
  excellent |                   12 |                39238.08
  very good |                    3 |                12292.43
+ good      |                    2 |                 3980.00
 (4 rows)
 
--- Nested SQL query
+-- SELECT banks.security AS "Security",
+--        COUNT(*) AS "Total # of robberies",
+--        ROUND((SUM(amount)/ COUNT(*)), 2) AS "Average amount of money"
+-- FROM banks
+--     INNER JOIN robberies ON banks.bank_name = robberies.bank_name AND
+--                             banks.city = robberies.city
+-- GROUP BY banks.security;
+
+-- Nested SQL query for task 2
 SELECT bank_robberies.security AS "Security",
        COUNT(*) AS "Total # of robberies",
        ROUND((SUM(amount)/ COUNT(*)), 2) AS "Average amount of money"
@@ -115,6 +156,7 @@ FROM (SELECT banks.bank_name, banks.city, banks.security, robberies.amount
       WHERE banks.bank_name = robberies.bank_name AND
             banks.city = robberies.city) AS bank_robberies
 GROUP BY bank_robberies.security;
+
  Security  | Total # of robberies | Average amount of money
 -----------+----------------------+-------------------------
  weak      |                    4 |                 2299.50
@@ -268,37 +310,36 @@ Chicago) that observes the highest average share. The average share of a robbery
 computed based on the number of participants in that particular robbery. [7 marks]
 
 
-FROM accomplices AS t1, accomplices AS t2
+SELECT
+    ROUND(SUM(CASE WHEN city = 'Chicago'
+                   THEN share ELSE 0 END)/COUNT(CASE WHEN city = 'chicago'
+                                                     THEN 1 ELSE 0 END), 2) AS "Average share in Chicago",
+    ROUND(SUM(CASE WHEN NOT (city = 'Chicago')
+                   THEN share ELSE 0 END)/COUNT(CASE WHEN NOT(city = 'chicago')
+                                                     THEN 1 ELSE 0 END), 2) AS "Average share in other cities"
+FROM accomplices
+GROUP BY city;
+
+ Average share in Chicago | Average share in other cities
+--------------------------+-------------------------------
+                     0.00 |                       8255.16
+                  4221.41 |                          0.00
+(2 rows)
 
 
 
 -- Nested SQL query
 SELECT chicago.average AS "Average share in Chicago", others.average AS "Average share in other cities"
-FROM (SELECT ROUND((SUM(share)/COUNT(DISTINCT robber_id)), 2) AS "average"
+FROM (SELECT ROUND((SUM(share)/COUNT(robber_id)), 2) AS "average"
       FROM accomplices
       WHERE accomplices.city = 'Chicago') AS chicago,
-     (SELECT ROUND((SUM(share)/COUNT(DISTINCT robber_id)), 2) AS "average"
+     (SELECT ROUND((SUM(share)/COUNT(robber_id)), 2) AS "average"
       FROM accomplices
       WHERE NOT(accomplices.city = 'Chicago')) AS others;
  Average share in Chicago | Average share in other cities
 --------------------------+-------------------------------
-                  6595.96 |                      22158.58
+                  4221.41 |                       8255.16
 (1 row)
-
-
-SELECT SUM(accomplices.share) AS "Share", COUNT(DISTINCT accomplices.robber_id) AS "Average share in Chicago"
-FROM accomplices
-GROUP BY accomplices.city;
-
-SELECT accomplices.robber_id, COUNT(accomplices.robber_id) AS "Average share in Chicago"
-FROM accomplices
-WHERE city = 'Evanston'
-GROUP BY accomplices.robber_id;
-
-SELECT sum(share)
-FROM accomplices
-WHERE city = 'Evanston'
-GROUP BY accomplices.robber_id;
 
 
 

@@ -92,7 +92,7 @@ DETAIL:  Key (robber_id)=(1) is still referenced from table "has_accounts".
 a. (1, 'Driving')
 DELETE FROM skills WHERE skill_id = 1 AND description = 'Driving';
 DELETE 0
-this tuple can be deleted
+this tuple cannot be deleted because there is an existing tuple with skill_id = 1
 
 Your answer to Question 3 should include your SQL statements for each task, the feedback
 from PostgreSQL, and the constraint that has been violated in case of an error message.
