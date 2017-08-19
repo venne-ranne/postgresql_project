@@ -15,7 +15,7 @@
 -- more robberies than the average, but spent no time in prison. The answer should be sorted
 -- in decreasing order of the individual total “earnings” of the robbers. [7 marks]
 
--- Stepwise approach for task 1
+----- Stepwise approach for task 1 -----
 CREATE VIEW total_robberies AS
 SELECT nickname, COUNT(robber_id) AS total, SUM(share) AS share
 FROM robbers
@@ -42,7 +42,7 @@ WHERE (total > avg_robberies);
 (3 rows)
 
 
--- Nested SQL query for task 1
+----- Nested SQL query for task 1 -----
 SELECT (SELECT nickname
         FROM robbers
         WHERE accomplices.robber_id = robbers.robber_id) AS "Nickname"
@@ -70,7 +70,7 @@ ORDER BY SUM(accomplices.share) DESC;
 -- of that security level, and the average Amount of money that was stolen during these
 -- robberies. [7 marks]
 
--- Stepwise approach for task 2
+----- Stepwise approach for task 2 -----
 CREATE VIEW merge_banks_info AS
 SELECT bank_name, city, COUNT(*) AS total_robberies, SUM(amount) AS total_money
 FROM robberies
@@ -92,7 +92,7 @@ GROUP BY security;
  good      |                    2 |                 3980.00
 (4 rows)
 
--- Nested SQL query for task 2
+----- Nested SQL query for task 2 -----
 SELECT bank_robberies.security AS "Security",
        COUNT(*) AS "Total # of robberies",
        ROUND((SUM(amount)/ COUNT(*)), 2) AS "Average amount of money"
@@ -205,7 +205,7 @@ weak      | Scouting       | Vito Genovese
 -- where plans for a robbery next year are known. The answer should be sorted in decreasing
 -- order of the number of robbers who have accounts in that bank branch. [7 marks]
 
--- Stepwise approach for task 4
+----- Stepwise approach for task 4 -----
 CREATE VIEW never_been_robbed AS
 SELECT banks.bank_name, banks.city, banks.security, banks.no_accounts
 FROM banks
@@ -236,7 +236,7 @@ ORDER BY no_accounts DESC;
  PickPocket Bank | Deerfield | excellent
 (4 rows)
 
--- Nested SQL query for task 4
+----- Nested SQL query for task 4 -----
 SELECT target_banks.bank_name AS "BankName",
        target_banks.city AS "City",
        target_banks.security AS "Security"
@@ -266,7 +266,7 @@ ORDER BY target_banks.no_accounts DESC;
 -- Chicago) that observes the highest average share. The average share of a robbery is
 -- computed based on the number of participants in that particular robbery. [7 marks]
 
--- Stepwise approach for task 5
+----- Stepwise approach for task 5 -----
 CREATE VIEW chicago_avg AS
 SELECT ROUND((SUM(share)/COUNT(robber_id)), 2) AS avg
 FROM accomplices
@@ -287,7 +287,7 @@ FROM chicago_avg, others_avg;
                   4221.41 |                       8255.16
 (1 row)
 
--- Nested SQL query for task 5
+----- Nested SQL query for task 5 -----
 SELECT chicago.average AS "Average share in Chicago", others.average AS "Average share in other cities"
 FROM (SELECT ROUND((SUM(share)/COUNT(robber_id)), 2) AS "average"
       FROM accomplices
@@ -301,7 +301,7 @@ FROM (SELECT ROUND((SUM(share)/COUNT(robber_id)), 2) AS "average"
                   4221.41 |                       8255.16
 (1 row)
 
--- EXTRAS: Other approach for task 5
+----- EXTRAS: Other approach for task 5 -----
 SELECT
     ROUND(SUM(CASE WHEN city = 'Chicago'
                    THEN share ELSE 0 END)/COUNT(CASE WHEN city = 'chicago'
