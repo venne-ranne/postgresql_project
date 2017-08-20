@@ -1,10 +1,12 @@
-QUESTION 4: Simple Database Queries [24 marks]
-You are now expected to use SQL as a query language to retrieve data from the database.
-Perform the series of 8 tasks listed below. For each task, record the answer from PostgreSQL.
-The tasks:
-1. Retrieve BankName and Security for all banks in Chicago that have more than 9000
-accounts. [3 marks]
-SELECT bank_name AS "BankName", security AS "Security" FROM banks WHERE city = 'Chicago' AND no_accounts > 9000;
+-- QUESTION 4: Simple Database Queries [24 marks]
+-- You are now expected to use SQL as a query language to retrieve data from the database.
+-- Perform the series of 8 tasks listed below. For each task, record the answer from PostgreSQL.
+-- The tasks:
+-- 1. Retrieve BankName and Security for all banks in Chicago that have more than 9000 accounts. [3 marks]
+SELECT bank_name AS "BankName", security AS "Security"
+FROM banks
+WHERE city = 'Chicago' AND no_accounts > 9000;
+
     BankName     | Security
 -----------------+-----------
  NXP Bank        | very good
@@ -17,14 +19,14 @@ SELECT bank_name AS "BankName", security AS "Security" FROM banks WHERE city = '
 (7 rows)
 
 
-
-2. Retrieve BankName of all banks where Calamity Jane has an account. The answer
-should list every bank at most once. [3 marks]
+-- 2. Retrieve BankName of all banks where Calamity Jane has an account. The answer
+-- should list every bank at most once. [3 marks]
 SELECT DISTINCT bank_name AS "BankName"
 FROM has_accounts
 WHERE robber_id = (SELECT robber_id
                    FROM robbers
                    WHERE nickname = 'Calamity Jane');
+
     BankName
 -----------------
  Dollar Grabbers
@@ -33,14 +35,15 @@ WHERE robber_id = (SELECT robber_id
 (3 rows)
 
 
-3. Retrieve BankName and City of all bank branches that have no branch in Chicago. The
-answer should be sorted in increasing order of the number of accounts. [3 marks]
+-- 3. Retrieve BankName and City of all bank branches that have no branch in Chicago. The
+-- answer should be sorted in increasing order of the number of accounts. [3 marks]
 SELECT bank_name AS "BankName", city AS "City"
 FROM banks
 WHERE (SELECT subquery.bank_name
        FROM banks AS "subquery"
        WHERE subquery.city = 'Chicago' AND subquery.bank_name = banks.bank_name) IS NULL
 ORDER BY no_accounts ASC;
+
     BankName    |   City
 ----------------+-----------
  Gun Chase Bank | Deerfield
@@ -49,30 +52,30 @@ ORDER BY no_accounts ASC;
 (3 rows)
 
 
-
-4. Retrieve BankName and City of the first bank branch that was ever robbed by the gang.
-[3 marks]
+-- 4. Retrieve BankName and City of the first bank branch that was ever robbed by the gang.[3 marks]
 SELECT DISTINCT bank_name AS "BankName", city AS "City"
 FROM accomplices
-WHERE robbery_date = (SELECT MIN(robbery_date) FROM accomplices);
+WHERE robbery_date = (SELECT MIN(robbery_date)
+                      FROM accomplices);
+
     BankName    |   City
 ----------------+----------
  Loanshark Bank | Evanston
 (1 row)
 
 
-5. Retrieve RobberId, Nickname and individual total “earnings” of those robbers who have
-earned more than $30,000 by robbing banks. The answer should be sorted in decreasing
-order of the total earnings. [3 marks]
+-- 5. Retrieve RobberId, Nickname and individual total “earnings” of those robbers who have
+-- earned more than $30,000 by robbing banks. The answer should be sorted in decreasing
+-- order of the total earnings. [3 marks]
 SELECT robber_id AS "RobberId",
-       (SELECT nickname
-        FROM robbers
-        WHERE robbers.robber_id = accomplices.robber_id) AS "Nickname",
+       nickname AS "Nickname",
        SUM(share) AS "Total Earning"
 FROM accomplices
-GROUP BY robber_id
+    NATURAL INNER JOIN robbers
+GROUP BY robber_id, nickname
 HAVING SUM(share) > 30000.00
 ORDER BY SUM(share) DESC;
+
  RobberId |     Nickname      | Total Earning
 ----------+-------------------+---------------
         5 | Mimmy The Mau Mau |      70000.00
@@ -87,19 +90,14 @@ ORDER BY SUM(share) DESC;
 (9 rows)
 
 
-
-
-6. Retrieve the Descriptions of all skills together with the RobberId and NickName of all
-robbers that possess this skill. The answer should be grouped by skill description.
-[3 marks]
+-- 6. Retrieve the Descriptions of all skills together with the RobberId and NickName of all
+-- robbers that possess this skill. The answer should be grouped by skill description.[3 marks]
 SELECT robber_id AS "RobberId",
-       (SELECT nickname
-        FROM robbers
-        WHERE robbers.robber_id = has_skills.robber_id) AS "Nickname",
-       (SELECT description
-        FROM skills
-        WHERE skills.skill_id = has_skills.skill_id) AS "Skill"
+       nickname AS "Nickname",
+       description AS "Skill"
 FROM has_skills
+    NATURAL INNER JOIN robbers
+    NATURAL INNER JOIN skills
 ORDER BY has_skills.skill_id;
 
  RobberId |     Nickname      |     Skill
@@ -145,9 +143,11 @@ ORDER BY has_skills.skill_id;
 (38 rows)
 
 
-7. Retrieve RobberId, NickName, and the Number of Years in Prison for all robbers who
-were in prison for more than three years. [3 marks]
-SELECT robber_id AS "RobberId", nickname AS "Nickname", no_years AS "Total prison years"
+-- 7. Retrieve RobberId, NickName, and the Number of Years in Prison for all robbers who
+-- were in prison for more than three years. [3 marks]
+SELECT robber_id AS "RobberId",
+       nickname AS "Nickname",
+       no_years AS "Total prison years"
 FROM robbers
 WHERE no_years > 3;
  RobberId |    Nickname    | Total prison years
@@ -164,11 +164,15 @@ WHERE no_years > 3;
        20 | Longy Zwillman |                  6
 (10 rows)
 
-8. Retrieve RobberId, Nickname and the Number of Years not spent in prison for all
-robbers who spent more than half of their life in prison. [3 marks]
-SELECT robber_id AS "RobberId", nickname AS "Nickname", (age-no_years) AS "Number of year not in prison"
+
+-- 8. Retrieve RobberId, Nickname and the Number of Years not spent in prison for all
+-- robbers who spent more than half of their life in prison. [3 marks]
+SELECT robber_id AS "RobberId",
+       nickname AS "Nickname",
+       (age-no_years) AS "Number of year not in prison"
 FROM robbers
 WHERE no_years > (age/2);
+
  RobberId |   Nickname    | Number of year not in prison
 ----------+---------------+------------------------------
         6 | Tony Genovese |                           12
@@ -176,7 +180,6 @@ WHERE no_years > (age/2);
 (2 rows)
 
 
-Your answer to Question 4 should include your SQL statement for each task, and the answer
-from PostgreSQL.
-Also, submit your SQL queries electronically. Submit each query (just SQL code) as a separate
-.sql file. Name files in the following way: Query4_TaskX.sql, where X ranges from 1 to 8.
+-- Your answer to Question 4 should include your SQL statement for each task, and the answer
+-- from PostgreSQL. Also, submit your SQL queries electronically. Submit each query (just SQL code) as a separate
+-- .sql file. Name files in the following way: Query4_TaskX.sql, where X ranges from 1 to 8.
