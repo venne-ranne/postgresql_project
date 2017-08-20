@@ -1,19 +1,3 @@
------ Stepwise approach for task 5 -----
-CREATE VIEW chicago_avg AS
-SELECT ROUND((SUM(share)/COUNT(robber_id)), 2) AS avg
-FROM accomplices
-WHERE city = 'Chicago';
-
-CREATE VIEW others_avg AS
-SELECT ROUND((SUM(share)/COUNT(robber_id)), 2) AS avg
-FROM accomplices
-WHERE NOT(city = 'Chicago');
-
-CREATE VIEW avg_share AS
-SELECT chicago_avg.avg AS "Average share in Chicago",
-       others_avg.avg AS "Average share in other cities"
-FROM chicago_avg, others_avg;
-
 ----- Single nested SQL query for task 5 -----
 SELECT chicago.average AS "Average share in Chicago", others.average AS "Average share in other cities"
 FROM (SELECT ROUND((SUM(share)/COUNT(robber_id)), 2) AS "average"

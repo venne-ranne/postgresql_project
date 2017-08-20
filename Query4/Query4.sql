@@ -151,6 +151,7 @@ SELECT robber_id AS "RobberId",
        no_years AS "Total prison years"
 FROM robbers
 WHERE no_years > 3;
+
  RobberId |    Nickname    | Total prison years
 ----------+----------------+--------------------
         2 | Bugsy Malone   |                 15
