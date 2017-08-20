@@ -23,6 +23,7 @@ INSERT INTO banks VALUES ('EasyLoan Bank', 'Evanston', 100, 'poor');
 ERROR:  new row for relation "banks" violates check constraint "check_security_input"
 DETAIL:  Failing row contains (EasyLoan Bank, Evanston, 100, poor).
 
+
 2. Insert the following tuple into the Skills table:
 a. (20, 'Guarding')
 INSERT INTO skills VALUES (20, 'Guarding');
@@ -40,7 +41,6 @@ b. (333, 'Jail Mouse', 25, 35)
 INSERT INTO robbers VALUES (333, 'Jail Mouse', 25, 35);
 ERROR:  new row for relation "robbers" violates check constraint "check_prison_years"
 DETAIL:  Failing row contains (333, Jail Mouse, 25, 35).
-
 
 4. Insert the following tuples into the HasSkills table:
 a. (333, 1, 1, 'B-')
@@ -60,14 +60,14 @@ DETAIL:  Failing row contains (1, 7, 1, A+).
 
 d. (1, 2, 0, 'A')
 INSERT INTO has_skills VALUES (1, 2, 0, 'A');
-ERROR:  new row for relation "has_skills" violates check constraint "check_preference_input"
+ERROR:  new row for relation "has_skills" violates check constraint "check_preference_num"
 DETAIL:  Failing row contains (1, 2, 0, A ).
 
 5. Insert the following tuple into the Robberies table:
 a. ('NXP Bank', 'Chicago', '2009-01-08', 1000)
 INSERT INTO robberies VALUES ('NXP Bank', 'Chicago', '2009-01-08', 1000);
 ERROR:  duplicate key value violates unique constraint "robberies_pkey"
-DETAIL:  Key (bank_name, city, date)=(NXP Bank, Chicago, 2009-01-08) already exists.
+DETAIL:  Key (bank_name, city, robbery_date)=(NXP Bank, Chicago, 2009-01-08) already exists.
 
 6. Delete the following tuples from the Banks table:
 a. ('PickPocket Bank', 'Evanston', 2000, 'very good')
@@ -94,7 +94,7 @@ DETAIL:  Key (robber_id)=(1) is still referenced from table "has_accounts".
 a. (1, 'Driving')
 DELETE FROM skills WHERE skill_id = 1 AND description = 'Driving';
 DELETE 0
-There is not error thrown but the result is DELETE 0 which means no tuple is deleted from the table.
+There is not error thrown and no tuple in table is deleted as there is no matching tuple with values(1, 'Driving').
 
 Your answer to Question 3 should include your SQL statements for each task, the feedback
 from PostgreSQL, and the constraint that has been violated in case of an error message.
