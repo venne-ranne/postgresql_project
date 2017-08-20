@@ -42,7 +42,7 @@ WHERE (total > avg_robberies);
 (3 rows)
 
 
------ Nested SQL query for task 1 -----
+----- Single nested SQL query for task 1 -----
 SELECT (SELECT nickname
         FROM robbers
         WHERE accomplices.robber_id = robbers.robber_id) AS "Nickname"
@@ -92,7 +92,7 @@ GROUP BY security;
  good      |                    2 |                 3980.00
 (4 rows)
 
------ Nested SQL query for task 2 -----
+----- Single nested SQL query for task 2 -----
 SELECT bank_robberies.security AS "Security",
        COUNT(*) AS "Total # of robberies",
        ROUND((SUM(amount)/ COUNT(*)), 2) AS "Average amount of money"
@@ -120,83 +120,173 @@ GROUP BY bank_robberies.security;
 -- participating robber in each robbery of a bank branch of the respective security level, and
 -- the nicknames of all robbers who have that skill. [7 marks]
 
-SELECT banks.security, skills.description, robbers.nickname
-FROM has_skills
-  inner join accomplices on has_skills.robber_id = accomplices.robber_id
-  inner join skills on skills.skill_id = has_skills.skill_id
-  inner join banks on accomplices.bank_name = banks.bank_name AND accomplices.city = banks.city
-  inner join robbers on accomplices.robber_id = robbers.robber_id
-GROUP BY banks.security, skills.description, robbers.nickname
-ORDER BY banks.security;
-security  |  description   |     nickname
+----- Stepwise approach for task 3 -----
+CREATE VIEW robbers_info AS
+SELECT robber_id, nickname, skill_id, bank_name, city
+FROM accomplices
+    NATURAL INNER JOIN robbers
+    NATURAL INNER JOIN has_skills;
+
+CREATE VIEW robbers_skills AS
+SELECT robber_id, nickname, description, bank_name, city
+FROM robbers_info NATURAL INNER JOIN skills;
+
+CREATE VIEW banks_info AS
+SELECT robber_id, nickname, description, security
+FROM robbers_skills NATURAL INNER JOIN banks;
+
+CREATE VIEW suspects_list AS
+SELECT security AS "Security", description AS "Description", nickname AS "Nickname"
+FROM banks_info
+GROUP BY security, description, nickname
+ORDER BY security;
+
+Security  |  Description   |     Nickname
 -----------+----------------+-------------------
-excellent | Driving        | Bugsy Siegel
-excellent | Driving        | Dutch Schulz
-excellent | Driving        | Longy Zwillman
-excellent | Driving        | Lucky Luchiano
-excellent | Driving        | Mimmy The Mau Mau
-excellent | Explosives     | Sonny Genovese
-excellent | Guarding       | Anastazia
-excellent | Guarding       | Bugsy Siegel
-excellent | Gun-Shooting   | Waxey Gordon
-excellent | Lock-Picking   | Clyde
-excellent | Lock-Picking   | Dutch Schulz
-excellent | Lock-Picking   | Greasy Guzik
-excellent | Lock-Picking   | Lucky Luchiano
-excellent | Lock-Picking   | Sonny Genovese
-excellent | Planning       | Al Capone
-excellent | Planning       | Boo Boo Hoff
-excellent | Planning       | Clyde
-excellent | Planning       | King Solomon
-excellent | Planning       | Mimmy The Mau Mau
-excellent | Preaching      | Al Capone
-excellent | Preaching      | Bonnie
-excellent | Preaching      | Greasy Guzik
-excellent | Safe-Cracking  | Al Capone
-excellent | Safe-Cracking  | Meyer Lansky
-excellent | Safe-Cracking  | Sonny Genovese
-excellent | Scouting       | Clyde
-good      | Cooking        | Vito Genovese
-good      | Eating         | Vito Genovese
-good      | Money Counting | Kid Cann
-good      | Money Counting | Mickey Cohen
-good      | Scouting       | Vito Genovese
-very good | Driving        | Lepke Buchalter
-very good | Driving        | Longy Zwillman
-very good | Explosives     | Bugsy Malone
-very good | Explosives     | Sonny Genovese
-very good | Guarding       | Anastazia
-very good | Guarding       | Lepke Buchalter
-very good | Lock-Picking   | Sonny Genovese
-very good | Planning       | Al Capone
-very good | Planning       | King Solomon
-very good | Preaching      | Al Capone
-very good | Safe-Cracking  | Al Capone
-very good | Safe-Cracking  | Moe Dalitz
-very good | Safe-Cracking  | Sonny Genovese
-weak      | Cooking        | Vito Genovese
-weak      | Driving        | Bugsy Siegel
-weak      | Driving        | Dutch Schulz
-weak      | Driving        | Lepke Buchalter
-weak      | Eating         | Vito Genovese
-weak      | Explosives     | Sonny Genovese
-weak      | Guarding       | Bugsy Siegel
-weak      | Guarding       | Lepke Buchalter
-weak      | Lock-Picking   | Clyde
-weak      | Lock-Picking   | Dutch Schulz
-weak      | Lock-Picking   | Greasy Guzik
-weak      | Lock-Picking   | Sonny Genovese
-weak      | Planning       | Al Capone
-weak      | Planning       | Boo Boo Hoff
-weak      | Planning       | Clyde
-weak      | Preaching      | Al Capone
-weak      | Preaching      | Greasy Guzik
-weak      | Safe-Cracking  | Al Capone
-weak      | Safe-Cracking  | Sonny Genovese
-weak      | Scouting       | Clyde
-weak      | Scouting       | Vito Genovese
+ excellent | Driving        | Bugsy Siegel
+ excellent | Driving        | Dutch Schulz
+ excellent | Driving        | Longy Zwillman
+ excellent | Driving        | Lucky Luchiano
+ excellent | Driving        | Mimmy The Mau Mau
+ excellent | Explosives     | Sonny Genovese
+ excellent | Guarding       | Anastazia
+ excellent | Guarding       | Bugsy Siegel
+ excellent | Gun-Shooting   | Waxey Gordon
+ excellent | Lock-Picking   | Clyde
+ excellent | Lock-Picking   | Dutch Schulz
+ excellent | Lock-Picking   | Greasy Guzik
+ excellent | Lock-Picking   | Lucky Luchiano
+ excellent | Lock-Picking   | Sonny Genovese
+ excellent | Planning       | Al Capone
+ excellent | Planning       | Boo Boo Hoff
+ excellent | Planning       | Clyde
+ excellent | Planning       | King Solomon
+ excellent | Planning       | Mimmy The Mau Mau
+ excellent | Preaching      | Al Capone
+ excellent | Preaching      | Bonnie
+ excellent | Preaching      | Greasy Guzik
+ excellent | Safe-Cracking  | Al Capone
+ excellent | Safe-Cracking  | Meyer Lansky
+ excellent | Safe-Cracking  | Sonny Genovese
+ excellent | Scouting       | Clyde
+ good      | Cooking        | Vito Genovese
+ good      | Eating         | Vito Genovese
+ good      | Money Counting | Kid Cann
+ good      | Money Counting | Mickey Cohen
+ good      | Scouting       | Vito Genovese
+ very good | Driving        | Lepke Buchalter
+ very good | Driving        | Longy Zwillman
+ very good | Explosives     | Bugsy Malone
+ very good | Explosives     | Sonny Genovese
+ very good | Guarding       | Anastazia
+ very good | Guarding       | Lepke Buchalter
+ very good | Lock-Picking   | Sonny Genovese
+ very good | Planning       | Al Capone
+ very good | Planning       | King Solomon
+ very good | Preaching      | Al Capone
+ very good | Safe-Cracking  | Al Capone
+ very good | Safe-Cracking  | Moe Dalitz
+ very good | Safe-Cracking  | Sonny Genovese
+ weak      | Cooking        | Vito Genovese
+ weak      | Driving        | Bugsy Siegel
+ weak      | Driving        | Dutch Schulz
+ weak      | Driving        | Lepke Buchalter
+ weak      | Eating         | Vito Genovese
+ weak      | Explosives     | Sonny Genovese
+ weak      | Guarding       | Bugsy Siegel
+ weak      | Guarding       | Lepke Buchalter
+ weak      | Lock-Picking   | Clyde
+ weak      | Lock-Picking   | Dutch Schulz
+ weak      | Lock-Picking   | Greasy Guzik
+ weak      | Lock-Picking   | Sonny Genovese
+ weak      | Planning       | Al Capone
+ weak      | Planning       | Boo Boo Hoff
+ weak      | Planning       | Clyde
+ weak      | Preaching      | Al Capone
+ weak      | Preaching      | Greasy Guzik
+ weak      | Safe-Cracking  | Al Capone
+ weak      | Safe-Cracking  | Sonny Genovese
+ weak      | Scouting       | Clyde
+ weak      | Scouting       | Vito Genovese
 (65 rows)
 
+----- Single nested SQL query for task 3 -----
+SELECT DISTINCT security AS "Security", description AS "Description", nickname AS "Nickname"
+FROM accomplices
+  NATURAL INNER JOIN has_skills
+  NATURAL INNER JOIN skills
+  NATURAL INNER JOIN banks
+  NATURAL INNER JOIN robbers
+ORDER BY security;
+
+Security  |  Description   |     Nickname
+-----------+----------------+-------------------
+ excellent | Driving        | Bugsy Siegel
+ excellent | Driving        | Dutch Schulz
+ excellent | Driving        | Longy Zwillman
+ excellent | Driving        | Lucky Luchiano
+ excellent | Driving        | Mimmy The Mau Mau
+ excellent | Explosives     | Sonny Genovese
+ excellent | Guarding       | Anastazia
+ excellent | Guarding       | Bugsy Siegel
+ excellent | Gun-Shooting   | Waxey Gordon
+ excellent | Lock-Picking   | Clyde
+ excellent | Lock-Picking   | Dutch Schulz
+ excellent | Lock-Picking   | Greasy Guzik
+ excellent | Lock-Picking   | Lucky Luchiano
+ excellent | Lock-Picking   | Sonny Genovese
+ excellent | Planning       | Al Capone
+ excellent | Planning       | Boo Boo Hoff
+ excellent | Planning       | Clyde
+ excellent | Planning       | King Solomon
+ excellent | Planning       | Mimmy The Mau Mau
+ excellent | Preaching      | Al Capone
+ excellent | Preaching      | Bonnie
+ excellent | Preaching      | Greasy Guzik
+ excellent | Safe-Cracking  | Al Capone
+ excellent | Safe-Cracking  | Meyer Lansky
+ excellent | Safe-Cracking  | Sonny Genovese
+ excellent | Scouting       | Clyde
+ good      | Cooking        | Vito Genovese
+ good      | Eating         | Vito Genovese
+ good      | Money Counting | Kid Cann
+ good      | Money Counting | Mickey Cohen
+ good      | Scouting       | Vito Genovese
+ very good | Driving        | Lepke Buchalter
+ very good | Driving        | Longy Zwillman
+ very good | Explosives     | Bugsy Malone
+ very good | Explosives     | Sonny Genovese
+ very good | Guarding       | Anastazia
+ very good | Guarding       | Lepke Buchalter
+ very good | Lock-Picking   | Sonny Genovese
+ very good | Planning       | Al Capone
+ very good | Planning       | King Solomon
+ very good | Preaching      | Al Capone
+ very good | Safe-Cracking  | Al Capone
+ very good | Safe-Cracking  | Moe Dalitz
+ very good | Safe-Cracking  | Sonny Genovese
+ weak      | Cooking        | Vito Genovese
+ weak      | Driving        | Bugsy Siegel
+ weak      | Driving        | Dutch Schulz
+ weak      | Driving        | Lepke Buchalter
+ weak      | Eating         | Vito Genovese
+ weak      | Explosives     | Sonny Genovese
+ weak      | Guarding       | Bugsy Siegel
+ weak      | Guarding       | Lepke Buchalter
+ weak      | Lock-Picking   | Clyde
+ weak      | Lock-Picking   | Dutch Schulz
+ weak      | Lock-Picking   | Greasy Guzik
+ weak      | Lock-Picking   | Sonny Genovese
+ weak      | Planning       | Al Capone
+ weak      | Planning       | Boo Boo Hoff
+ weak      | Planning       | Clyde
+ weak      | Preaching      | Al Capone
+ weak      | Preaching      | Greasy Guzik
+ weak      | Safe-Cracking  | Al Capone
+ weak      | Safe-Cracking  | Sonny Genovese
+ weak      | Scouting       | Clyde
+ weak      | Scouting       | Vito Genovese
+(65 rows)
 
 
 -- 4. The police department wants to increase security at those bank branches that are most
@@ -236,7 +326,7 @@ ORDER BY no_accounts DESC;
  PickPocket Bank | Deerfield | excellent
 (4 rows)
 
------ Nested SQL query for task 4 -----
+----- Single nested SQL query for task 4 -----
 SELECT target_banks.bank_name AS "BankName",
        target_banks.city AS "City",
        target_banks.security AS "Security"
@@ -287,7 +377,7 @@ FROM chicago_avg, others_avg;
                   4221.41 |                       8255.16
 (1 row)
 
------ Nested SQL query for task 5 -----
+----- Single nested SQL query for task 5 -----
 SELECT chicago.average AS "Average share in Chicago", others.average AS "Average share in other cities"
 FROM (SELECT ROUND((SUM(share)/COUNT(robber_id)), 2) AS "average"
       FROM accomplices

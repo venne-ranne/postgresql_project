@@ -47,7 +47,7 @@ CREATE TABLE robbers(
 );
 \copy robbers(nickname, age, no_years) from 'robbers_17.data'
 
-CREATE TABLE has_accounts_test(
+CREATE TABLE has_accounts(
    robber_id int NOT NULL,
    bank_name VARCHAR(80) NOT NULL,
    city VARCHAR(25) NOT NULL,
@@ -166,23 +166,3 @@ SELECT * FROM accomplices_raw WHERE robber_id IS NULL;
 
 -- insert all rows from the dummy table accomplices_raw into the original accomplices table
 INSERT INTO accomplices (SELECT DISTINCT robber_id, bank_name, city, robbery_date, share FROM accomplices_raw);
-
-
--- banks (bank_name, city, no_accounts, security) with primary key {bank_name, city}
--- robberies(bank_name, city, robbery_date, amount) with primary key {bank_name, city, robbery_date} and foreign key SID  SUPPLIER[SID]
-Attributes: BankName, City, Date, Amount
-• Plans, which stores information about banks that the gang plans to rob.
-Attributes: BankName, City, NoRobbers, PlannedDate
-• Robbers, which stores information about gang members. Note that it is not possible to be in prison for more years than you have been alive!
-Attributes: RobberId, Nickname, Age, NoYears
-• Skills, which stores the possible robbery skills.
-Attributes: SkillId, Description
-• HasSkills, which stores information about the skills that particular gang members possess.
-Each skill of a robber has a preference rank, and a grade.
-Attributes: RobberId, SkillId, Preference, Grade
-• HasAccounts, which stores information about the banks where individual gang members
-have accounts.
-Attributes: RobberId, BankName, City
-• Accomplices, which stores information about which gang members participated in each
-bank robbery, and what share of the money they got.
-Attributes: RobberId, BankName, City, RobberyDate, Share
