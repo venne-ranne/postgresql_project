@@ -71,14 +71,13 @@ DETAIL:  Key (bank_name, city, robbery_date)=(NXP Bank, Chicago, 2009-01-08) alr
 
 6. Delete the following tuples from the Banks table:
 a. ('PickPocket Bank', 'Evanston', 2000, 'very good')
-INSERT INTO banks VALUES ('PickPocket Bank', 'Evanston', 2000, 'very good');
-ERROR:  duplicate key value violates unique constraint "banks_pkey"
-DETAIL:  Key (bank_name, city)=(PickPocket Bank, Evanston) already exists.
+DELETE FROM banks WHERE bank_name = 'PickPocket Bank' AND city = 'Evanston' AND no_accounts = 2000 AND security = 'very good';
+ERROR:  update or delete on table "banks" violates foreign key constraint "robberies_bank_name_fkey" on table "robberies"
+DETAIL:  Key (bank_name, city)=(PickPocket Bank, Evanston) is still referenced from table "robberies".
 
 b. ('Outside Bank', 'Chicago', 5000, 'good')
-INSERT INTO banks VALUES ('Outside Bank', 'Chicago', 5000, 'good');
-ERROR:  duplicate key value violates unique constraint "banks_pkey"
-DETAIL:  Key (bank_name, city)=(Outside Bank, Chicago) already exists.
+DELETE FROM banks WHERE bank_name = 'Outside Bank' AND city = 'Chicago' AND no_accounts = 5000 AND security = 'good';
+DELETE 1
 
 
 In the following two tasks we assume that Al Capone has the robber Id 1. If Al Capone has a
